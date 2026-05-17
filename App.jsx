@@ -150,6 +150,32 @@ export default function App() {
   // ── LOAD ──
   useEffect(()=>{
     Promise.all([loadLeads(), loadLawyers()]).finally(()=>setLoading(false));
+
+    // Realtime — novas mensagens
+    const msgSub = sb.channel("messages-realtime")
+      .on("postgres_changes", {event:"INSERT", schema:"public", table:"messages"}, payload => {
+        const msg = payload.new;
+        setLeads(p=>p.map(l=>{
+          if(l.id !== msg.lead_id) return l;
+          const already = (l.messages||[]).find(m=>m.id===msg.id);
+          if(already) return l;
+          return {...l, messages:[...(l.messages||[]),msg], lastMsg:msg.created_at};
+        }));
+      })
+      .subscribe();
+
+    // Realtime — novos leads
+    const leadSub = sb.channel("leads-realtime")
+      .on("postgres_changes", {event:"INSERT", schema:"public", table:"leads"}, payload => {
+        const lead = dbToLead(payload.new, []);
+        setLeads(p=>{
+          if(p.find(l=>l.id===lead.id)) return p;
+          return [lead, ...p];
+        });
+      })
+      .subscribe();
+
+    return () => { sb.removeChannel(msgSub); sb.removeChannel(leadSub); };
   },[]);
 
   const loadLeads = async () => {
