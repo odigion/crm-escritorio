@@ -5,14 +5,16 @@ import { createClient } from "@supabase/supabase-js";
 const SUPA_URL = "https://ryxdkcrqmkilkqqqtmqa.supabase.co";
 const SUPA_KEY = "sb_publishable_ooIIQXUhfwiojbAQuqmIxg_f7ChSLo7";
 const sb = createClient(SUPA_URL, SUPA_KEY);
+
 const ZAPI_ID    = "3F33B8B411B633FCEFFA4ADA414C2585";
 const ZAPI_TOKEN = "8783A19C8DD838AC16F1F26B";
 const ZAPI_URL   = `https://api.z-api.io/instances/${ZAPI_ID}/token/${ZAPI_TOKEN}`;
+
 const sendWhatsApp = async (phone, message) => {
-  const number = phone.replace(/\D/g,"");
+  const number = phone.replace(/\D/g,"").replace(/^0+/,"");
   await fetch(`${ZAPI_URL}/send-text`, {
     method:"POST",
-    headers:{"Content-Type":"application/json","Client-Token": ZAPI_TOKEN},
+    headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ phone: number, message })
   });
 };
