@@ -6,13 +6,11 @@ const SUPA_URL = "https://ryxdkcrqmkilkqqqtmqa.supabase.co";
 const SUPA_KEY = "sb_publishable_ooIIQXUhfwiojbAQuqmIxg_f7ChSLo7";
 const sb = createClient(SUPA_URL, SUPA_KEY);
 
-const ZAPI_ID    = "3F33B8B411B633FCEFFA4ADA414C2585";
-const ZAPI_TOKEN = "8783A19C8DD838AC16F1F26B";
-const ZAPI_URL   = `https://api.z-api.io/instances/${ZAPI_ID}/token/${ZAPI_TOKEN}`;
+const N8N_SEND_URL = "https://odigion.app.n8n.cloud/webhook/fe7350ba-3b54-4059-8817-9979c6100e62";
 
 const sendWhatsApp = async (phone, message) => {
   const number = phone.replace(/\D/g,"").replace(/^0+/,"");
-  await fetch(`${ZAPI_URL}/send-text`, {
+  await fetch(N8N_SEND_URL, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ phone: number, message })
