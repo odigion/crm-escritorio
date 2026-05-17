@@ -5,6 +5,17 @@ import { createClient } from "@supabase/supabase-js";
 const SUPA_URL = "https://ryxdkcrqmkilkqqqtmqa.supabase.co";
 const SUPA_KEY = "sb_publishable_ooIIQXUhfwiojbAQuqmIxg_f7ChSLo7";
 const sb = createClient(SUPA_URL, SUPA_KEY);
+const ZAPI_ID    = "3F33B8B411B633FCEFFA4ADA414C2585";
+const ZAPI_TOKEN = "8783A19C8DD838AC16F1F26B";
+const ZAPI_URL   = `https://api.z-api.io/instances/${ZAPI_ID}/token/${ZAPI_TOKEN}`;
+const sendWhatsApp = async (phone, message) => {
+  const number = phone.replace(/\D/g,"");
+  await fetch(`${ZAPI_URL}/send-text`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Client-Token": ZAPI_TOKEN},
+    body: JSON.stringify({ phone: number, message })
+  });
+};
 
 const T = {
   bg:"#F4F1EC", surf:"#FDFCFA", card:"#FFFFFF", border:"#E8E2D9", borderD:"#D5CCBE",
@@ -188,6 +199,7 @@ export default function App() {
     if(data){
       setLeads(p=>p.map(l=>l.id===lead.id?{...l, messages:[...(l.messages||[]),data], lastMsg:now}:l));
       await sb.from("leads").update({last_msg_at:now}).eq("id",lead.id);
+      await sendWhatsApp(lead.phone, text);
     }
     setNewMsg("");
     setSaving(false);
