@@ -370,11 +370,11 @@ function ConvView({leads,selId,setSelId,filter,setFilter,lead,newMsg,setNewMsg,s
                   {msg.from_type==="c"&&<Ava icon={OI[lead.origin]} bg={OC[lead.origin]+"1a"}/>}
                   <div>
                     <div className="bbl" style={{background:msg.from_type==="l"?T.gold:"#fff",color:msg.from_type==="l"?"#fff":T.text,border:msg.from_type==="l"?"none":`1px solid ${T.border}`,borderRadius:msg.from_type==="l"?"16px 16px 4px 16px":"16px 16px 16px 4px",boxShadow:T.shadow}}>
-                      {msg.is_audio
-                        ? <AudBbl dur={msg.duration} light={msg.from_type==="l"}/>
-                        : msg.duration && (msg.duration.startsWith('http'))
+                      {msg.is_audio && msg.duration
+                        ? <AudBbl url={msg.duration} light={msg.from_type==="l"}/>
+                        : !msg.is_audio && msg.duration && msg.duration.startsWith('http')
                           ? <MediaBbl url={msg.duration} text={msg.text} light={msg.from_type==="l"}/>
-                          : msg.text}
+                          : msg.text || ""}
                     </div>
                     <div style={{fontSize:10,color:T.textS,marginTop:3,textAlign:msg.from_type==="l"?"right":"left"}}>{msg.msg_time}{msg.from_type==="l"&&" · ✓ Enviado"}</div>
                   </div>
@@ -489,7 +489,23 @@ function InfoPanel({lead,upd,lawyers}){
 const Sel=({lbl,k,val,opts,labels,set})=>(<div style={{marginBottom:9}}><label className="flbl">{lbl}</label><select value={val||""} onChange={e=>set(k,e.target.value)} style={{fontSize:11}}><option value="">— Selecionar —</option>{opts.map((o,i)=><option key={o} value={o}>{labels?labels[i]:o}</option>)}</select></div>);
 const Inp=({lbl,k,val,set,type="text",placeholder})=>(<div style={{marginBottom:9}}><label className="flbl">{lbl}</label><input type={type} value={val||""} placeholder={placeholder||`${lbl}...`} style={{fontSize:11}} onChange={e=>set(k,type==="number"?Number(e.target.value):e.target.value)}/></div>);
 const Ava=({icon,bg})=>(<div style={{width:28,height:28,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0}}>{icon}</div>);
-const AudBbl=({dur,light})=>(<div style={{display:"flex",alignItems:"center",gap:9,minWidth:155}}><button style={{width:26,height:26,borderRadius:"50%",background:light?"rgba(255,255,255,.25)":"#8B6F3E22",border:"none",cursor:"pointer",fontSize:10,display:"flex",alignItems:"center",justifyContent:"center",color:light?"#fff":T.gold,flexShrink:0}}>▶</button><div style={{flex:1,height:3,background:light?"rgba(255,255,255,.3)":T.border,borderRadius:2}}><div style={{width:"33%",height:"100%",background:light?"rgba(255,255,255,.65)":T.gold,borderRadius:2}}/></div><span style={{fontSize:10,color:light?"rgba(255,255,255,.7)":T.textS,flexShrink:0}}>{dur}</span><span style={{fontSize:12,opacity:.7}}>🎤</span></div>);
+const AudBbl=({url,light})=>{
+  const [playing,setPlaying]=useState(false);
+  const aRef=useRef(null);
+  const toggle=()=>{
+    if(!aRef.current) return;
+    if(playing){aRef.current.pause();setPlaying(false);}
+    else{aRef.current.play();setPlaying(true);}
+  };
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:9,minWidth:180}}>
+      {url && <audio ref={aRef} src={url} onEnded={()=>setPlaying(false)} style={{display:"none"}}/>}
+      <button onClick={toggle} style={{width:26,height:26,borderRadius:"50%",background:light?"rgba(255,255,255,.25)":"#8B6F3E22",border:"none",cursor:"pointer",fontSize:10,display:"flex",alignItems:"center",justifyContent:"center",color:light?"#fff":T.gold,flexShrink:0}}>{playing?"⏸":"▶"}</button>
+      <div style={{flex:1,height:3,background:light?"rgba(255,255,255,.3)":T.border,borderRadius:2}}><div style={{width:"33%",height:"100%",background:light?"rgba(255,255,255,.65)":T.gold,borderRadius:2}}/></div>
+      <span style={{fontSize:12,opacity:.7}}>🎤</span>
+    </div>
+  );
+};
 
 const MediaBbl=({url,text,light})=>{
   const isImg = /\.(jpg|jpeg|png|gif|webp)/i.test(url);
