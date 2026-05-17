@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { createClient } from "@supabase/supabase-js";
 
 const SUPA_URL = "https://ryxdkcrqmkilkqqqtmqa.supabase.co";
-const SUPA_KEY = "sb_publishable_ooIIQXUhfwiojbAQuqmIxg_f7ChSLo7";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5eGRrY3JxbWtpbGtxcXF0bXFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTg4NDUsImV4cCI6MjA5NDQ5NDg0NX0.jGkeEj1PerikJv06evEDHQ7_Lpjq8MU2cANJH3ukPJU";
 const sb = createClient(SUPA_URL, SUPA_KEY);
 
 const N8N_SEND_URL = "https://odigion.app.n8n.cloud/webhook/fe7350ba-3b54-4059-8817-9979c6100e62";
