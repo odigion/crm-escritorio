@@ -151,31 +151,17 @@ export default function App() {
   useEffect(()=>{
     Promise.all([loadLeads(), loadLawyers()]).finally(()=>setLoading(false));
 
-    // Realtime — novas mensagens
-    const msgSub = sb.channel("messages-realtime")
-      .on("postgres_changes", {event:"INSERT", schema:"public", table:"messages"}, payload => {
-        const msg = payload.new;
-        setLeads(p=>p.map(l=>{
-          if(l.id !== msg.lead_id) return l;
-          const already = (l.messages||[]).find(m=>m.id===msg.id);
-          if(already) return l;
-          return {...l, messages:[...(l.messages||[]),msg], lastMsg:msg.created_at};
-        }));
-      })
-      .subscribe();
+    // Polling — verifica novas mensagens e leads a cada 5 segundos
+    const poll = setInterval(async () => {
+      const {data:leadsData} = await sb.from("leads").select("*").order("last_msg_at",{ascending:false});
+      if(!leadsData) return;
+      const {data:msgsData} = await sb.from("messages").select("*").order("created_at",{ascending:true});
+      const msgsByLead = {};
+      (msgsData||[]).forEach(m=>{ if(!msgsByLead[m.lead_id]) msgsByLead[m.lead_id]=[]; msgsByLead[m.lead_id].push(m); });
+      setLeads(leadsData.map(r=>dbToLead(r, msgsByLead[r.id]||[])));
+    }, 5000);
 
-    // Realtime — novos leads
-    const leadSub = sb.channel("leads-realtime")
-      .on("postgres_changes", {event:"INSERT", schema:"public", table:"leads"}, payload => {
-        const lead = dbToLead(payload.new, []);
-        setLeads(p=>{
-          if(p.find(l=>l.id===lead.id)) return p;
-          return [lead, ...p];
-        });
-      })
-      .subscribe();
-
-    return () => { sb.removeChannel(msgSub); sb.removeChannel(leadSub); };
+    return () => clearInterval(poll);
   },[]);
 
   const loadLeads = async () => {
