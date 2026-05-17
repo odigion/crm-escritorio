@@ -194,7 +194,8 @@ export default function App() {
     if(!newMsg.trim()||!lead) return;
     setSaving(true);
     const now = new Date().toISOString();
-    const msgRow = { lead_id:lead.id, from_type:"l", text:newMsg.trim(), is_audio:false, duration:"", msg_time:ft(now) };
+    const text = newMsg.trim();
+    const msgRow = { lead_id:lead.id, from_type:"l", text, is_audio:false, duration:"", msg_time:ft(now) };
     const {data} = await sb.from("messages").insert(msgRow).select().single();
     if(data){
       setLeads(p=>p.map(l=>l.id===lead.id?{...l, messages:[...(l.messages||[]),data], lastMsg:now}:l));
